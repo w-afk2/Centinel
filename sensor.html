@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11181c">
+  <meta name="description" content="Vista de sensor de inclinación para usar el acelerómetro de un teléfono con Centinel.">
+  <title>Centinel · Sensor del teléfono</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="sensor.js" defer></script>
+</head>
+<body class="sensor-page">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Volver al dashboard Centinela">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M16 3.5 27 9.8v12.4L16 28.5 5 22.2V9.8L16 3.5Z" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8.5 16h4l2.1-5 3.2 10 2.1-5h3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-copy"><strong>CENTINEL</strong><small>LABORATORIO DE CAMPO</small></span>
+      </a>
+      <div class="topbar-center"><span class="topbar-rule"></span><span>NODO · INCLINACIÓN</span><span class="topbar-rule"></span></div>
+      <div class="topbar-right">
+        <span class="synthetic-pill"><span class="pulse-dot"></span> SONDEO SIMULADO</span>
+        <a class="mode-link" href="index.html">Dashboard <span aria-hidden="true">↗</span></a>
+        <a class="mode-link" href="simulador.html">Simulador <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <main class="sensor-workspace">
+      <div class="page-heading">
+        <div>
+          <div class="breadcrumb"><span>PROTOTIPO CENTINEL</span><b>/</b><span>RED DE NODOS</span></div>
+          <h1>Sensor de <em>inclinación</em></h1>
+          <p class="page-subtitle">Simulación automática del sondeo de celulares y su actividad de movimiento.</p>
+        </div>
+        <div class="run-meta"><span class="run-meta-label">NODO DE PRUEBA</span><strong id="nodeLabel">Maqueta 1</strong><span id="sensorRunState" class="run-state is-playing"><i></i><span id="sensorRunStateText">SONDEANDO</span></span></div>
+      </div>
+
+      <article class="card sensor-survey-card" aria-label="Actividad de sondeo de celulares">
+        <div class="card-heading"><div><span class="eyebrow">00 · RED DE SONDEO</span><h2>Actividad de celulares en el área</h2></div><span id="surveyClock" class="unit-label">INICIANDO RED</span></div>
+        <p class="survey-caption">Nodos de demostración consultados automáticamente. Los datos y dispositivos de esta vista son simulados.</p>
+        <div class="survey-metrics" aria-live="polite">
+          <div><span>CELULARES SONDEADOS</span><strong id="surveyTotal">5</strong></div>
+          <div class="survey-metric-active"><span>ACTIVOS</span><strong id="surveyActive">3</strong></div>
+          <div class="survey-metric-warn"><span>INTERMITENTES</span><strong id="surveyIntermittent">1</strong></div>
+          <div class="survey-metric-off"><span>INACTIVOS</span><strong id="surveyInactive">1</strong></div>
+        </div>
+        <div id="surveyNodes" class="survey-node-grid" aria-label="Estado de cada celular sondeado"></div>
+        <div class="survey-feed-wrap"><span class="survey-feed-label">PAQUETES DE SONDEO RECIENTES</span><ol id="surveyFeed" class="survey-feed" aria-live="polite"></ol></div>
+      </article>
+
+      <div class="sensor-grid">
+        <section class="sensor-primary" aria-label="Lectura del sensor">
+          <article id="levelCard" class="card sensor-level-card level-detenido">
+            <div class="card-heading"><div><span class="eyebrow">01 · ESTADO DEL NODO</span><h2>Semáforo de inclinación</h2></div><span class="unit-label">DATOS SIMULADOS</span></div>
+            <div class="sensor-level-banner">
+              <div class="sensor-level-copy"><span class="sensor-level-caption">NIVEL DE RIESGO</span><strong id="levelName" class="sensor-level-name" aria-live="polite">DETENIDO</strong></div>
+              <div class="sensor-angle"><span id="angle">0.00</span><small>°</small></div>
+            </div>
+            <div id="hint" class="sensor-level-hint" aria-live="polite">El sondeo automático está preparando las primeras lecturas de la red.</div>
+            <div class="sensor-action-row">
+              <button id="btnStart" class="sensor-button sensor-button-primary" type="button">Pausar sondeo</button>
+              <button id="btnCal" class="sensor-button" type="button">Reiniciar ciclo</button>
+              <button id="btnSilence" class="sensor-button" type="button" disabled>Silenciar alarma</button>
+              <button id="btnTestTg" class="sensor-button sensor-button-test" type="button">Probar Telegram</button>
+            </div>
+            <p class="sensor-tg-permission">Al probar, se te pedirá permiso para notificaciones del navegador y confirmación antes de enviar un mensaje de prueba a Telegram. El permiso de notificaciones puede rechazarse; Telegram seguirá funcionando.</p>
+            <p id="telegramFeedback" class="sensor-telegram-feedback" role="status" aria-live="polite">Configura y guarda tu bot para probar la conexión.</p>
+            <div class="sensor-secure-note"><span class="note-mark">i</span><span>Esta vista usa señales sintéticas para demostrar el sondeo. No lee el acelerómetro real ni representa mediciones de emergencia.</span></div>
+          </article>
+
+          <article class="card sensor-chart-card">
+            <div class="card-heading"><div><span class="eyebrow">02 · TELEMETRÍA</span><h2>Inclinación en el tiempo</h2></div><span id="sensorHzBadge" class="unit-label">SIMULACIÓN</span></div>
+            <div class="sensor-chart-legend"><span><i class="sensor-legend-line"></i>Señal simulada</span><span><i class="sensor-legend-line sensor-legend-yellow"></i>Umbral amarillo</span><span><i class="sensor-legend-line sensor-legend-red"></i>Umbral rojo</span></div>
+            <div class="sensor-chart-wrap"><canvas id="sensorChart" aria-label="Señal simulada de inclinación durante los últimos 60 segundos" role="img"></canvas></div>
+            <p class="sensor-chart-note">VENTANA MÓVIL · 60 S <span>·</span> MUESTRA CADA 100 MS</p>
+          </article>
+        </section>
+
+        <aside class="sensor-sidebar" aria-label="Configuración y registro">
+          <article class="card sensor-readings-card">
+            <div class="card-heading"><div><span class="eyebrow">03 · DIAGNÓSTICO</span><h2>Lecturas simuladas</h2></div><span class="detector-glyph" aria-hidden="true">⌁</span></div>
+            <div class="sensor-reading-grid">
+              <div class="sensor-reading"><span>ACELERÓMETRO</span><strong id="sAcc">sin datos</strong></div>
+              <div class="sensor-reading"><span>GIROSCOPIO</span><strong id="sGyro">sin datos</strong></div>
+              <div class="sensor-reading sensor-reading-wide"><span>GRAVEDAD · X / Y / Z</span><strong id="sVec">—</strong></div>
+              <div class="sensor-reading"><span>MUESTRAS POR SEGUNDO</span><strong id="sHz">—</strong></div>
+              <div id="shockReading" class="sensor-reading"><span>GOLPE DETECTADO</span><strong id="sShock">no</strong></div>
+            </div>
+          </article>
+
+          <details class="card sensor-settings-card" id="cfg">
+            <summary>Configuración del nodo</summary>
+            <div class="sensor-settings-form">
+              <div class="sensor-form-field"><label for="nodeName">Nombre del nodo</label><input id="nodeName" value="Maqueta 1" maxlength="50" autocomplete="off"></div>
+              <div class="sensor-form-pair">
+                <div class="sensor-form-field"><label for="thYellow">Amarillo · grados</label><input id="thYellow" type="number" min="0.1" max="45" step="0.1" value="2"></div>
+                <div class="sensor-form-field"><label for="thRed">Rojo · grados</label><input id="thRed" type="number" min="0.2" max="90" step="0.1" value="5"></div>
+                <div class="sensor-form-field"><label for="hold">Sostenido · s</label><input id="hold" type="number" min="0" max="60" step="0.5" value="2"></div>
+              </div>
+              <div class="sensor-form-field"><label for="tgToken">Token del bot de Telegram</label><input id="tgToken" type="password" placeholder="Pegar token del bot" autocomplete="new-password"></div>
+              <div class="sensor-form-field"><label for="tgChat">ID del chat de Telegram</label><input id="tgChat" placeholder="Ej. 123456789" autocomplete="off"></div>
+              <p class="sensor-form-note">Primero abre el bot en Telegram y envíale <strong>/start</strong>; después guarda el token y el ID del chat. Telegram no permite que el bot inicie una conversación por sí solo. La configuración se guarda en este navegador; no publiques ni compartas el token.</p>
+              <button id="btnSave" class="sensor-button sensor-save-button" type="button">Guardar configuración</button>
+            </div>
+          </details>
+
+          <article class="card sensor-log-card">
+            <div class="card-heading"><div><span class="eyebrow">04 · BITÁCORA</span><h2>Registro del nodo</h2></div><span class="unit-label">ÚLTIMOS 50</span></div>
+            <ol id="log" class="sensor-log-list" reversed aria-live="polite"><li>Iniciando sondeo simulado de la red.</li></ol>
+          </article>
+        </aside>
+      </div>
+
+      <footer class="page-footer"><span><i class="footer-dot"></i> RED SIMULADA · PROTOTIPO DE DEMOSTRACIÓN</span><span>Esta simulación no sustituye instrumentos certificados ni un sistema oficial de alerta.</span></footer>
+    </main>
+  </div>
+</body>
+</html>

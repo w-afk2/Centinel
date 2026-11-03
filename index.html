@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11181c">
+  <meta name="description" content="Dashboard del proyecto Centinela: mapa de fenómenos en Nicaragua, red comunitaria, sensor y simulación.">
+  <title>Centinela · Dashboard de campo</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="dashboard.js" defer></script>
+</head>
+<body class="dashboard-page">
+  <div class="app-shell">
+    <header class="topbar dashboard-topbar">
+      <a class="brand" href="#inicio" aria-label="Centinela, dashboard">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 3.5 27 9.8v12.4L16 28.5 5 22.2V9.8L16 3.5Z" stroke="currentColor" stroke-width="1.4"/><path d="M8.5 16h4l2.1-5 3.2 10 2.1-5h3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="brand-copy"><strong>CENTINELA</strong><small>RED COMUNITARIA · NICARAGUA</small></span>
+      </a>
+      <div class="topbar-center"><span class="topbar-rule"></span><span>DASHBOARD DE CAMPO</span><span class="topbar-rule"></span></div>
+      <div class="topbar-right">
+        <span class="synthetic-pill"><span class="pulse-dot"></span> PROTOTIPO</span>
+        <a class="mode-link" href="simulador.html">Simulador <span aria-hidden="true">↗</span></a>
+        <a class="mode-link dashboard-sensor-link" href="sensor.html">Sensor <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <div class="dashboard-frame">
+      <aside class="dash-sidebar" aria-label="Navegación del dashboard">
+        <span class="dash-side-label">NAVEGACIÓN</span>
+        <a class="dash-nav-link is-active" href="#inicio"><span>00</span> Resumen</a>
+        <a class="dash-nav-link" href="#mapa"><span>01</span> Mapa de Nicaragua</a>
+        <a class="dash-nav-link" href="#problema"><span>02</span> Problemática</a>
+        <a class="dash-nav-link" href="#solucion"><span>03</span> Solución</a>
+        <a class="dash-nav-link" href="#funcionamiento"><span>04</span> Cómo funciona</a>
+        <a class="dash-nav-link" href="#impacto"><span>05</span> Impacto</a>
+        <a class="dash-nav-link" href="#red"><span>06</span> Red comunitaria</a>
+        <a class="dash-nav-link" href="#innovacion"><span>07</span> Innovación</a>
+        <a class="dash-nav-link" href="#factibilidad"><span>08</span> Factibilidad</a>
+        <a class="dash-nav-link" href="#decisiones"><span>09</span> Decisiones</a>
+        <a class="dash-nav-link" href="#equipo"><span>10</span> Equipo</a>
+        <div class="dash-side-bottom"><i class="footer-dot"></i><span>PISTÓNNICA · RUSB1</span></div>
+      </aside>
+
+      <main class="dash-content">
+        <section class="dash-hero" id="inicio" aria-labelledby="dash-title">
+          <div class="dash-hero-copy">
+            <div class="dash-kicker"><span class="dash-kicker-line"></span> DESAFÍO 02 · SENSORES AL SERVICIO DE LA COMUNIDAD</div>
+            <h1 id="dash-title">Tecnología reutilizada.<br><em>Comunidades más preparadas.</em></h1>
+            <p>Centinela convierte teléfonos en desuso en nodos de observación comunitaria para explorar la detección de sismos y deslizamientos. Consulta el panorama meteorológico de Nicaragua y las herramientas del prototipo desde un solo panel.</p>
+            <div class="dash-hero-actions"><a class="dash-button dash-button-primary" href="#mapa">Abrir mapa <span>↓</span></a><a class="dash-button" href="simulador.html">Explorar simulación <span>↗</span></a></div>
+          </div>
+          <div class="dash-hero-plate" aria-label="Diagrama del nodo Centinela">
+            <div class="plate-ring ring-one"></div><div class="plate-ring ring-two"></div><div class="plate-core"><span>CN</span><i></i></div>
+            <span class="plate-label plate-label-a"><i></i> ACELERÓMETRO</span><span class="plate-label plate-label-b"><i></i> FILTRADO LOCAL</span><span class="plate-label plate-label-c"><i></i> ALERTA COMUNITARIA</span>
+            <span class="plate-coordinate">12° 08′ N / 86° 15′ W</span>
+          </div>
+        </section>
+
+        <section class="dash-overview" aria-label="Resumen del proyecto">
+          <article class="overview-card"><span class="overview-label">MODELO DE RED</span><strong>Descentralizada</strong><small>Teléfonos reutilizados como nodos</small><span class="overview-icon">⌘</span></article>
+          <article class="overview-card"><span class="overview-label">CAPACIDADES</span><strong>Sismo + inclinación</strong><small>Acelerómetro · giroscopio · filtros</small><span class="overview-icon overview-blue">⌁</span></article>
+          <article class="overview-card"><span class="overview-label">MAPA METEOROLÓGICO</span><strong id="overviewWeather">Consultando…</strong><small id="overviewWeatherSub">Pronóstico modelado por ubicación</small><span class="overview-icon overview-amber">◉</span></article>
+          <article class="overview-card"><span class="overview-label">ESTADO CENTINELA</span><strong>Prototipo de demostración</strong><small>Sin estaciones conectadas a servidor</small><span class="overview-icon overview-violet">◌</span></article>
+        </section>
+
+        <section class="dash-section map-section" id="mapa">
+          <div class="dash-section-heading">
+            <div><span class="dash-eyebrow">01 · CONTEXTO TERRITORIAL</span><h2>Fenómenos sobre <em>Nicaragua</em></h2><p>Explora el pronóstico y el sondeo de celulares de ejemplo por ubicación y estado.</p></div>
+            <div class="map-update-block"><span id="mapStatus" class="map-status"><i></i><span>Iniciando mapa…</span></span><button id="refreshWeather" class="dash-icon-button" type="button" title="Actualizar pronóstico" aria-label="Actualizar pronóstico">↻</button></div>
+          </div>
+          <div class="map-console card">
+            <div class="map-console-bar">
+              <div class="map-layers" role="group" aria-label="Capas del mapa">
+                <button class="map-layer-button is-selected" type="button" data-layer="temperature" aria-pressed="true"><i class="layer-temp"></i> Temperatura</button>
+                <button class="map-layer-button" type="button" data-layer="wind" aria-pressed="false"><i class="layer-wind">↗</i> Viento</button>
+                <button class="map-layer-button" type="button" data-layer="rain" aria-pressed="false"><i class="layer-rain">▤</i> Precipitación</button>
+                <button class="map-layer-button" type="button" data-layer="centinela" aria-pressed="false"><i class="layer-centinela">⌖</i> Centinela</button>
+              </div>
+              <div class="map-time-control"><label for="forecastHour">HORA DE PRONÓSTICO</label><input id="forecastHour" type="range" min="0" max="24" step="1" value="0"><output id="forecastHourLabel">—</output></div>
+            </div>
+            <div class="map-body">
+              <div id="nicaraguaMap" class="nicaragua-map" role="application" aria-label="Mapa interactivo de Nicaragua">
+                <div id="mapFallback" class="map-fallback"><span class="fallback-mark">⌖</span><strong>Preparando mapa interactivo</strong><small>Se requiere conexión para cargar la cartografía y el pronóstico.</small></div>
+                <aside class="device-map-summary" aria-label="Conteo de celulares del sondeo de área, datos de demostración">
+                  <div class="device-map-heading"><span>SONDEO DE ÁREA</span><b>DEMO</b></div>
+                  <div class="device-map-total"><strong id="surveyTotal">5</strong><span>celulares de ejemplo</span></div>
+                  <div class="device-map-counts">
+                    <span class="device-count-active"><i></i><b id="surveyActive">3</b> activos</span>
+                    <span class="device-count-intermittent"><i></i><b id="surveyIntermittent">1</b> intermitente</span>
+                    <span class="device-count-inactive"><i></i><b id="surveyInactive">1</b> inactivo</span>
+                  </div>
+                </aside>
+              </div>
+              <aside class="map-readout" aria-label="Lecturas del mapa">
+                <div class="readout-header"><span class="dash-eyebrow">LECTURA TERRITORIAL</span><span class="readout-live"><i></i> MODELO</span></div>
+                <div class="readout-place"><span id="selectedPlaceLabel">NICARAGUA · RESUMEN</span><strong id="selectedPlaceValue">—</strong><small id="selectedPlaceCondition">Selecciona un punto en el mapa</small></div>
+                <div class="readout-grid"><div><span>TEMPERATURA</span><strong id="readTemp">—</strong></div><div><span>VIENTO</span><strong id="readWind">—</strong></div><div><span>PRECIPITACIÓN</span><strong id="readRain">—</strong></div><div><span>DIRECCIÓN</span><strong id="readDirection">—</strong></div></div>
+                <div class="map-gradient"><div class="gradient-label"><span id="legendMin">24°</span><span>ESCALA DE TEMPERATURA</span><span id="legendMax">34°</span></div><div class="gradient-bar"></div></div>
+                <div class="map-data-note"><span class="note-mark">i</span><p id="mapDataNote">Datos de pronóstico meteorológico. No representan estaciones Centinela.</p></div>
+                <div class="map-source"><span>FUENTE METEO</span><strong><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo · modelo de pronóstico ↗</a></strong><small id="mapTimestamp">Esperando datos…</small></div>
+              </aside>
+            </div>
+            <div class="map-footer"><span><i class="map-footer-pin"></i> Managua</span><span><i class="map-footer-pin blue-pin"></i> Costa Caribe</span><span><i class="map-footer-pin amber-pin"></i> Estaciones meteorológicas de referencia</span><span class="map-attribution">Mapa base © OpenStreetMap contributors · Leaflet</span></div>
+          </div>
+          <p class="map-disclaimer">El mapa muestra puntos meteorológicos y halos de color aproximados alrededor de cada ubicación; no son una imagen satelital ni una interpolación oficial. El pronóstico procede de un modelo consultado en Open-Meteo y puede diferir de las condiciones observadas. Los nodos y eventos Centinela son ilustrativos. Esta interfaz no es un servicio oficial ni debe usarse para decisiones de emergencia.</p>
+        </section>
+
+        <section class="dash-section" id="problema">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">02 · PROBLEMÁTICA</span><h2>Dos brechas, una oportunidad</h2><p>Hay dispositivos funcionales sin uso y comunidades donde el monitoreo ambiental especializado es limitado.</p></div><span class="section-index">02</span></div>
+          <div class="dash-card-grid two-col"><article class="dash-info-card"><span class="info-glyph">▣</span><span class="card-tag">RESIDUO ELECTRÓNICO</span><h3>Móviles abandonados</h3><p>Teléfonos que aún conservan sensores y capacidad de procesamiento suelen quedar almacenados o desecharse. Su vida útil puede extenderse con una instalación adecuada y segura.</p></article><article class="dash-info-card"><span class="info-glyph info-glyph-amber">⌖</span><span class="card-tag">BRECHA DE MONITOREO</span><h3>Instrumentación costosa</h3><p>Las estaciones especializadas requieren inversión, mantenimiento y cobertura. La propuesta explora si sensores móviles reutilizados pueden complementar la observación local.</p></article></div>
+          <div class="dash-callout"><span>!</span><p><strong>Pregunta del proyecto:</strong> ¿cómo aprovechar hardware existente para experimentar con monitoreo distribuido, manteniendo claras las limitaciones de precisión y validación?</p></div>
+        </section>
+
+        <section class="dash-section dash-section-alt" id="solucion">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">03 · SOLUCIÓN</span><h2>Centinela: nodos de observación accesibles</h2><p>Un teléfono se fija en una base estable, procesa movimiento localmente y comparte el estado cuando existe conectividad.</p></div><span class="section-index">03</span></div>
+          <div class="workflow-grid"><article class="workflow-step"><span>01</span><div class="workflow-icon">⌁</div><h3>Detectar</h3><p>Acelerómetro y giroscopio leen movimiento e inclinación.</p></article><div class="workflow-connector">→</div><article class="workflow-step"><span>02</span><div class="workflow-icon">∿</div><h3>Filtrar</h3><p>Procesamiento local busca señales sostenidas y reduce impulsos breves.</p></article><div class="workflow-connector">→</div><article class="workflow-step"><span>03</span><div class="workflow-icon">▤</div><h3>Registrar</h3><p>El nodo conserva la bitácora local y puede sincronizar al recuperar red.</p></article><div class="workflow-connector">→</div><article class="workflow-step"><span>04</span><div class="workflow-icon">⌖</div><h3>Compartir</h3><p>La red comunitaria resume observaciones para revisión humana.</p></article></div>
+          <div class="dash-action-strip"><div><span class="dash-eyebrow">HERRAMIENTAS INTERACTIVAS</span><strong>Explora el procesamiento y la lectura del teléfono</strong><small>La simulación y el sensor son páginas independientes integradas al dashboard.</small></div><div class="dash-action-links"><a href="simulador.html" class="dash-button">Abrir simulador <span>↗</span></a><a href="sensor.html" class="dash-button dash-button-primary">Abrir sensor real <span>↗</span></a></div></div>
+        </section>
+
+        <section class="dash-section" id="funcionamiento">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">04 · CÓMO FUNCIONA</span><h2>Del teléfono al nodo comunitario</h2><p>La instalación, la orientación y la alimentación influyen en la calidad de la señal.</p></div><span class="section-index">04</span></div>
+          <div class="operation-grid"><article><span class="operation-number">A</span><h3>Seleccionar y montar</h3><p>Revisar que el acelerómetro funcione y fijar el móvil sobre una base firme, protegida de vibración externa no deseada.</p></article><article><span class="operation-number">B</span><h3>Calibrar y observar</h3><p>Tomar una referencia estable, registrar varias sesiones y comparar ruido normal con eventos conocidos antes de ajustar umbrales.</p></article><article><span class="operation-number">C</span><h3>Alimentar con cuidado</h3><p>Usar un teléfono en buen estado, evitar sobrecalentamiento y diseñar una alimentación compatible antes de un despliegue continuo.</p></article><article><span class="operation-number">D</span><h3>Revisar y responder</h3><p>Corroborar señales con otros nodos y fuentes oficiales. El prototipo no sustituye los protocolos ni las alertas institucionales.</p></article></div>
+          <div class="engineering-note"><span class="note-mark">i</span><p><strong>Validación requerida:</strong> los umbrales actuales son parámetros de demostración. No se han calibrado con una red de sensores ni validado como sistema de alerta temprana.</p></div>
+        </section>
+
+        <section class="dash-section dash-section-alt" id="impacto">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">05 · IMPACTO</span><h2>Impacto ambiental y comunitario</h2><p>Centinela cruza reutilización tecnológica con preparación local ante riesgos naturales.</p></div><span class="section-index">05</span></div>
+          <div class="dash-card-grid two-col"><article class="dash-info-card impact-environment"><span class="card-tag">CIRCULARIDAD</span><h3>Extender la vida útil</h3><p>Reutilizar móviles puede reducir desechos electrónicos y aprovechar componentes existentes cuando los equipos todavía son adecuados para la tarea.</p><div class="impact-points"><span>Reutilización</span><span>Menos descarte</span><span>Aprendizaje local</span></div></article><article class="dash-info-card impact-community"><span class="card-tag">RESILIENCIA</span><h3>Observar desde la comunidad</h3><p>Una red distribuida puede ayudar a visualizar cambios y facilitar conversaciones locales sobre preparación, siempre con verificación y protocolos responsables.</p><div class="impact-points"><span>Participación</span><span>Visibilidad</span><span>Colaboración</span></div></article></div>
+        </section>
+
+        <section class="dash-section" id="red">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">06 · LA RED</span><h2>Celulares del sondeo de área · maqueta</h2><p>La maqueta representa <span id="networkSurveySummary">5 teléfonos de ejemplo: 3 activos, 1 intermitente y 1 inactivo.</span></p></div><span class="demo-chip"><i></i> DATOS DE EJEMPLO</span></div>
+          <div class="node-table-wrap card"><div class="node-table-head"><span>NODO</span><span>UBICACIÓN</span><span>ESTADO DE MAQUETA</span><span>SEÑAL</span></div><div class="node-row"><strong>CN-014</strong><span>Managua · centro</span><span class="node-state node-online"><i></i> Activo (demo)</span><span>91%</span></div><div class="node-row"><strong>CN-021</strong><span>León · urbano</span><span class="node-state node-online"><i></i> Activo (demo)</span><span>84%</span></div><div class="node-row"><strong>CN-008</strong><span>Matagalpa · ladera</span><span class="node-state node-warn"><i></i> Intermitente (demo)</span><span>48%</span></div><div class="node-row"><strong>CN-032</strong><span>Bluefields · costa Caribe</span><span class="node-state node-online"><i></i> Activo (demo)</span><span>76%</span></div><div class="node-row"><strong>CN-019</strong><span>Estelí · norte</span><span class="node-state node-off"><i></i> Inactivo (demo)</span><span>0%</span></div></div>
+          <div class="dash-callout"><span>i</span><p>El mapa y esta tabla comparten 5 dispositivos ilustrativos. No son teléfonos efectivamente sondeados ni estaciones conectadas; reemplaza estos datos cuando tengas el inventario real.</p></div>
+        </section>
+
+        <section class="dash-section dash-section-alt" id="innovacion">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">07 · INNOVACIÓN</span><h2>Una arquitectura pensada para aprender en campo</h2></div><span class="section-index">07</span></div>
+          <div class="innovation-grid"><article><span>01</span><h3>Economía circular aplicada a riesgos</h3><p>Explora el uso de sensores que ya forman parte de dispositivos disponibles en los hogares.</p></article><article><span>02</span><h3>Procesamiento local</h3><p>La captura y el filtrado pueden funcionar en el dispositivo; el envío puede esperar a que vuelva la conexión.</p></article><article><span>03</span><h3>Red distribuida</h3><p>La idea integra múltiples observaciones para apoyar la revisión de patrones, sujeto a validación y gestión responsable.</p></article></div>
+        </section>
+
+        <section class="dash-section" id="factibilidad">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">08 · PREFACTIBILIDAD</span><h2>Escenarios preliminares de piloto</h2><p>Las cifras de referencia proceden del planteamiento del proyecto y requieren cotizaciones actualizadas.</p></div><span class="section-index">08</span></div>
+          <div class="budget-grid"><article class="budget-card"><div class="budget-top"><div><span class="card-tag">PILOTO MÍNIMO</span><h3>3 nodos · 1 puerta de enlace</h3></div><span class="budget-duration">6 MESES</span></div><div class="budget-total"><small>TOTAL ESTIMADO · +10% CONTINGENCIA</small><strong>$772.48</strong></div><div class="budget-breakdown"><span>Materiales de nodos <b>$47.98</b></span><span>Puerta de enlace y datos <b>$109.68</b></span><span>Herramientas y talleres <b>$544.59</b></span></div></article><article class="budget-card budget-featured"><div class="budget-top"><div><span class="card-tag">PILOTO AMPLIADO</span><h3>10 nodos · 2 puertas de enlace</h3></div><span class="budget-duration">12 MESES</span></div><div class="budget-total"><small>TOTAL ESTIMADO · +10% CONTINGENCIA</small><strong>$3,107.46</strong></div><div class="budget-breakdown"><span>Materiales y kits solares <b>$421.49</b></span><span>Puertas de enlace y datos <b>$415.94</b></span><span>Servicios, talleres y herramientas <b>$1,987.53</b></span></div></article></div>
+          <p class="budget-note">Montos de referencia, no cotizaciones vigentes. Costos, logística, seguridad eléctrica, conectividad y mantenimiento deben revisarse antes de cualquier piloto.</p>
+        </section>
+
+        <section class="dash-section dash-section-alt" id="decisiones" tabindex="-1">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">09 · DECISIONES DE DISEÑO</span><h2>Alcance acotado para un prototipo</h2><p>Las decisiones priorizan la experimentación y la reutilización frente a una infraestructura productiva desde el inicio.</p></div><span class="section-index">09</span></div>
+          <div class="decision-grid"><article><span class="decision-mark">×</span><div><h3>Arquitectura multiservidor compleja</h3><p>Se pospone para mantener el prototipo operable con recursos limitados y facilitar la validación inicial.</p></div></article><article><span class="decision-mark">×</span><div><h3>Hardware personalizado desde cero</h3><p>Se prioriza probar sensores disponibles en teléfonos antes de invertir en placas y carcasas diseñadas a medida.</p></div></article><article><span class="decision-mark decision-check">✓</span><div><h3>Pruebas controladas y progresivas</h3><p>El siguiente paso es comparar lecturas de teléfonos con instrumentos de referencia y estudiar falsos positivos.</p></div></article></div>
+        </section>
+
+        <section class="dash-section team-section" id="equipo" tabindex="-1">
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">10 · EQUIPO Y CIERRE</span><h2>PistónNica · RUSB1</h2><p>Desafío 02: sensores al servicio de la comunidad.</p></div><span class="section-index">10</span></div>
+          <div class="team-panel"><div class="team-monogram">P<span>N</span></div><div><span class="card-tag">PROTOTIPO COMUNITARIO</span><h3>Observar, reutilizar y prepararnos en comunidad</h3><p>Centinela presenta una propuesta para explorar cómo la tecnología existente puede apoyar el aprendizaje y la gestión de riesgos desde lo local.</p></div><div class="team-badge">NO ES UN SISTEMA OFICIAL<br>DE ALERTA TEMPRANA</div></div>
+          <div class="team-roster-heading"><span class="dash-eyebrow">EQUIPO DEL PROYECTO</span><span>9 INTEGRANTES · 1 MENTOR</span></div>
+          <ul class="team-roster" aria-label="Integrantes y mentor del proyecto">
+            <li class="roster-card roster-leader"><span class="roster-number">01</span><span class="roster-name">Zahid Enrrique Esquivel Lainez</span><span class="roster-role">LÍDER</span></li>
+            <li class="roster-card"><span class="roster-number">02</span><span class="roster-name">Samuel Alejandro Rugama Prado</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card"><span class="roster-number">03</span><span class="roster-name">Emily Valezka Vanegas Martinez</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card"><span class="roster-number">04</span><span class="roster-name">Mileyda Ines Traña Castañeda</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card"><span class="roster-number">05</span><span class="roster-name">Moises Francisco Flores Arias</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card"><span class="roster-number">06</span><span class="roster-name">Fatima Esmeralda Duarte Suarez</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card"><span class="roster-number">07</span><span class="roster-name">Isaac Alberto Barberena Farilñas</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card"><span class="roster-number">08</span><span class="roster-name">Samuel de Jesus Castro Prado</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card"><span class="roster-number">09</span><span class="roster-name">Diego Alejandro Ruiz Fonseca</span><span class="roster-role">INTEGRANTE</span></li>
+            <li class="roster-card roster-mentor"><span class="roster-number">10</span><span class="roster-name">Juan Carlos Aguirre</span><span class="roster-role">MENTOR</span></li>
+          </ul>
+          <footer class="dash-footer"><span><i class="footer-dot"></i> CENTINELA · DASHBOARD DE CAMPO</span><span>Mapa meteorológico: Open-Meteo · Cartografía: OpenStreetMap</span><a href="#inicio">Volver arriba ↑</a></footer>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

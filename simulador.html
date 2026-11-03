@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11181c">
+  <meta name="description" content="Simulador didáctico multiamenaza Centinel con evolución del índice de riesgo, alertas por nivel y recomendaciones generales.">
+  <title>Centinel · Simulación multiamenaza</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Volver al dashboard Centinela">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M16 3.5 27 9.8v12.4L16 28.5 5 22.2V9.8L16 3.5Z" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8.5 16h4l2.1-5 3.2 10 2.1-5h3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-copy"><strong>CENTINEL</strong><small>LABORATORIO DE CAMPO</small></span>
+      </a>
+      <div class="topbar-center"><span class="topbar-rule"></span><span>SIMULACIÓN MULTIAMENAZA</span><span class="topbar-rule"></span></div>
+      <div class="topbar-right">
+        <span class="synthetic-pill"><span class="pulse-dot"></span> ESCENARIO SINTÉTICO</span>
+        <a class="mode-link" href="index.html" aria-label="Volver al dashboard">Dashboard <span aria-hidden="true">↗</span></a>
+        <a class="mode-link" href="sensor.html" aria-label="Abrir sensor del teléfono">Sensor real <span aria-hidden="true">↗</span></a>
+        <span class="topbar-version">PROTOCOLO 01.4</span>
+      </div>
+    </header>
+
+    <main id="inicio" class="layout">
+      <aside class="controls-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">MESA DE ENSAYO</span><h2>Parámetros</h2></div>
+          <span class="step-number">01</span>
+        </div>
+
+        <label class="field-label" for="phenomenon">Fenómeno natural</label>
+        <div class="select-wrap">
+          <select id="phenomenon" class="select-control">
+            <option value="earthquake">Sismo / terremoto</option>
+            <option value="hurricane">Huracán / ciclón tropical</option>
+            <option value="flood">Inundación</option>
+            <option value="heavyRain">Lluvia extrema</option>
+            <option value="landslide">Deslizamiento / deslave</option>
+            <option value="volcano">Erupción volcánica</option>
+            <option value="tsunami">Tsunami / maremoto</option>
+            <option value="stormSurge">Marejada ciclónica</option>
+            <option value="drought">Sequía</option>
+            <option value="wildfire">Incendio forestal</option>
+            <option value="thunderstorm">Tormenta eléctrica</option>
+            <option value="hail">Granizada</option>
+            <option value="heat">Ola de calor</option>
+            <option value="strongWinds">Vientos extremos</option>
+            <option value="tornado">Tornado / viento tornádico</option>
+            <option value="other">Otro fenómeno</option>
+          </select>
+          <span class="select-chevron" aria-hidden="true">⌄</span>
+        </div>
+        <p class="field-hint phenomenon-hint">15 perfiles principales y una opción «Otro»; no son pronósticos.</p>
+
+        <label class="field-label scenario-label" for="scenario">Perfil de vibración del acelerómetro</label>
+        <div class="select-wrap">
+          <select id="scenario" class="select-control">
+            <option value="combined">Tránsito + evento sísmico</option>
+            <option value="quake">Evento sísmico</option>
+            <option value="vehicle">Vehículo pesado</option>
+            <option value="quiet">Ruido de fondo</option>
+          </select>
+          <span class="select-chevron" aria-hidden="true">⌄</span>
+        </div>
+        <p id="scenarioNote" class="field-hint">Dos fuentes superpuestas para observar el rechazo del tránsito.</p>
+
+        <div class="section-divider"><span>ENTRADA DEL SENSOR</span><i></i></div>
+
+        <div class="range-field">
+          <div class="range-heading"><label for="sampleRate">Frecuencia de muestreo</label><output id="sampleRateOut">100 Hz</output></div>
+          <input id="sampleRate" type="range" min="50" max="200" step="25" value="100">
+          <div class="range-ends"><span>50 Hz</span><span>200 Hz</span></div>
+        </div>
+        <div class="range-field">
+          <div class="range-heading"><label for="noise">Ruido del sensor</label><output id="noiseOut">0.004 g</output></div>
+          <input id="noise" type="range" min="0.001" max="0.012" step="0.001" value="0.004">
+          <div class="range-ends"><span>limpio</span><span>ruidoso</span></div>
+        </div>
+
+        <div class="section-divider"><span>FUENTES DE VIBRACIÓN</span><i></i></div>
+
+        <div class="range-field source-field">
+          <div class="range-heading"><label for="vehicleAmp"><span class="source-dot vehicle-dot"></span>Vehículo · pico</label><output id="vehicleAmpOut">0.045 g</output></div>
+          <input id="vehicleAmp" type="range" min="0.010" max="0.080" step="0.005" value="0.045">
+          <div class="range-ends"><span>0.010 g</span><span>0.080 g</span></div>
+        </div>
+        <div class="range-field source-field">
+          <div class="range-heading"><label for="quakeAmp"><span class="source-dot quake-dot"></span>Sismo · pico fase S</label><output id="quakeAmpOut">0.085 g</output></div>
+          <input id="quakeAmp" type="range" min="0.020" max="0.140" step="0.005" value="0.085">
+          <div class="range-ends"><span>0.020 g</span><span>0.140 g</span></div>
+        </div>
+
+        <div class="section-divider"><span>DETECTOR</span><i></i></div>
+
+        <div class="range-field">
+          <div class="range-heading"><label for="threshold">Umbral banda lenta</label><output id="thresholdOut">0.012 g</output></div>
+          <input id="threshold" type="range" min="0.005" max="0.040" step="0.001" value="0.012">
+          <div class="range-ends"><span>más sensible</span><span>menos sensible</span></div>
+        </div>
+        <div class="range-field">
+          <div class="range-heading"><label for="ratio"><span class="formula">L / R</span> Dominancia lenta</label><output id="ratioOut">1.25 ×</output></div>
+          <input id="ratio" type="range" min="0.80" max="2.50" step="0.05" value="1.25">
+          <div class="range-ends"><span>0.80 ×</span><span>2.50 ×</span></div>
+        </div>
+        <div class="range-field last-range">
+          <div class="range-heading"><label for="persistence">Persistencia mínima</label><output id="persistenceOut">2.0 s</output></div>
+          <input id="persistence" type="range" min="0.5" max="5.0" step="0.5" value="2.0">
+          <div class="range-ends"><span>0.5 s</span><span>5.0 s</span></div>
+        </div>
+
+        <div class="control-actions">
+          <button id="runBtn" class="button button-primary" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5v3M10 14.5v3M2.5 10h3M14.5 10h3M4.7 4.7l2.1 2.1m6.4 6.4 2.1 2.1m0-10.6-2.1 2.1m-6.4 6.4-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+            Iniciar simulación automática
+          </button>
+          <button id="resetBtn" class="button button-quiet" type="button">Restablecer valores</button>
+        </div>
+        <div class="side-note"><span class="note-mark">i</span><p>El índice de riesgo y la señal triaxial son simulaciones independientes. El acelerómetro del teléfono registra movimiento, no detecta peligros meteorológicos ni predice desastres.</p></div>
+      </aside>
+
+      <section class="workspace" aria-label="Panel de simulación">
+        <div class="page-heading">
+          <div>
+            <div class="breadcrumb"><span>PROTOTIPO CENTINEL</span><b>/</b><span>SIMULACIÓN MULTIAMENAZA</span></div>
+            <h1>Laboratorio de <em>riesgo natural</em></h1>
+            <p class="page-subtitle">Inicia un escenario, observa cómo escala el índice de riesgo y consulta recomendaciones generales.</p>
+          </div>
+          <div class="run-meta"><span class="run-meta-label">ENSAYO ACTUAL</span><strong id="runId">CEN-0001</strong><span id="runStatus" class="run-state"><i></i><span id="runStatusText">ANALIZADO</span></span></div>
+        </div>
+
+        <div class="metric-grid" aria-label="Resumen de la señal">
+          <article class="metric-card"><div class="metric-top"><span>PICO VECTORIAL</span><span class="metric-icon teal-icon">↗</span></div><div class="metric-value" id="peakValue">—<small> g</small></div><div class="metric-foot">máximo en los tres ejes</div></article>
+          <article class="metric-card"><div class="metric-top"><span>RMS LENTO MÁX.</span><span class="metric-icon blue-icon">∿</span></div><div class="metric-value" id="slowValue">—<small> g</small></div><div class="metric-foot">ventana móvil de 1 segundo</div></article>
+          <article class="metric-card"><div class="metric-top"><span>EVENTOS ACEPTADOS</span><span class="metric-icon amber-icon">⌁</span></div><div class="metric-value" id="eventsValue">—<small> evt</small></div><div class="metric-foot">persistencia aplicada</div></article>
+          <article class="metric-card"><div class="metric-top"><span>RELACIÓN LENTA / RÁPIDA</span><span class="metric-icon violet-icon">÷</span></div><div class="metric-value" id="ratioValue">—<small> ×</small></div><div class="metric-foot">máximo sobre el umbral RMS</div></article>
+        </div>
+
+        <article class="card hazard-card" aria-labelledby="hazardCardTitle">
+          <div class="hazard-card-heading">
+            <div><span class="eyebrow">01 · MONITOREO MULTIAMENAZA</span><h2 id="hazardCardTitle">Promedio de riesgo · <span id="hazardName">Sismo / terremoto</span></h2></div>
+            <div class="hazard-live"><i></i><span id="hazardLiveLabel">SIMULACIÓN EN ESPERA</span></div>
+          </div>
+          <div id="hazardStatus" class="hazard-status risk-low">
+            <span class="hazard-status-mark" aria-hidden="true">✓</span>
+            <div class="hazard-status-copy"><strong id="hazardStatusTitle">Riesgo bajo · esperando inicio</strong><p id="hazardStatusCopy">Presiona «Iniciar simulación automática» para ver cómo evolucionan los datos y las alertas.</p></div>
+            <div class="hazard-score"><strong id="riskCurrent">04</strong><span>ÍNDICE ACTUAL / 100</span></div>
+          </div>
+          <span id="hazardAnnouncement" class="sr-only" aria-live="assertive"></span>
+          <div class="risk-chart-heading"><span>ÍNDICE DE RIESGO Y PROMEDIO ACUMULADO</span><span id="riskAverage">Promedio 04 / 100</span></div>
+          <div class="chart-legend risk-legend"><span><i class="legend-line risk-main-line"></i>Riesgo simulado</span><span><i class="legend-line risk-average-line"></i>Promedio acumulado</span><span class="legend-zone">Nivel crítico ≥ 80</span></div>
+          <div class="chart-wrap risk-chart-wrap"><canvas id="riskChart" aria-label="Evolución del riesgo simulado y promedio acumulado de cero a cien" role="img"></canvas></div>
+          <div class="chart-footer"><span>Escala didáctica · niveles: bajo 0–24, atención 25–49, alto 50–79, crítico 80–100</span><span id="riskTimeLabel">00:00.0 / 01:00.0</span></div>
+          <section class="recommendation-panel" aria-labelledby="recommendationTitle">
+            <div class="recommendation-heading"><div><span class="eyebrow">ORIENTACIÓN GENERAL</span><h3 id="recommendationTitle">Recomendaciones · Sismo / terremoto</h3></div><span class="recommendation-level" id="recommendationLevel">NIVEL BAJO</span></div>
+            <ul id="recommendationList" class="recommendation-list"></ul>
+            <p class="recommendation-note">Esta demostración no emite alertas oficiales ni predice eventos. Atiende las indicaciones de las autoridades locales.</p>
+            <div class="recommendation-sources">Referencias: <a id="hazardSource" href="https://www.sinapred.gob.ni/index.php?Itemid=151&amp;id=31&amp;option=com_content&amp;view=article" target="_blank" rel="noopener noreferrer">Guía oficial relacionada</a><a href="https://www.sinapred.gob.ni/index.php/aprendamos-de-prevencion" target="_blank" rel="noopener noreferrer">SINAPRED · prevención</a><a href="https://web-geofisica.ineter.gob.ni/alerta-temprana.html" target="_blank" rel="noopener noreferrer">INETER · alerta temprana</a></div>
+          </section>
+        </article>
+
+        <div class="analysis-grid">
+          <article class="card signal-card">
+            <div class="card-heading">
+              <div><span class="eyebrow">02 · ACELERÓMETRO</span><h2>Señal triaxial</h2></div>
+              <div class="chart-controls">
+                <label class="sr-only" for="signalView">Vista de señal</label>
+                <select id="signalView" class="compact-select"><option value="axes">Tres ejes</option><option value="magnitude">Magnitud vectorial</option></select>
+              </div>
+            </div>
+            <div class="chart-legend"><span id="axisLegendItems"><span><i class="legend-line x-line"></i>Eje X</span><span><i class="legend-line y-line"></i>Eje Y</span><span><i class="legend-line z-line"></i>Eje Z</span></span><span id="magnitudeLegendItem" class="is-hidden"><i class="legend-line x-line"></i>Magnitud vectorial</span><span class="legend-zone"><i class="zone-swatch vehicle-swatch"></i>Vehículo</span><span class="legend-zone"><i class="zone-swatch quake-swatch"></i>Sismo</span></div>
+            <div class="chart-wrap signal-chart-wrap"><canvas id="signalChart" aria-label="Gráfica de aceleración triaxial sintética" role="img"></canvas></div>
+            <div class="chart-footer"><span>Aceleración dinámica · gravedad removida</span><span id="cursorReadout">t = 00:00.0</span></div>
+          </article>
+
+          <article class="card detector-card">
+            <div class="card-heading"><div><span class="eyebrow">03 · CLASIFICACIÓN</span><h2>Respuesta del detector</h2></div><span class="detector-glyph" aria-hidden="true">⌁</span></div>
+            <div id="detectorStatus" class="detector-status status-clear" aria-live="polite"><span id="statusSymbol" class="status-symbol" aria-hidden="true">✓</span><div><strong id="statusTitle">Sin eventos aceptados</strong><p id="statusCopy">La señal permanece bajo los criterios configurados.</p></div></div>
+            <div class="detector-readout"><div><span>CRITERIO DE ENERGÍA</span><strong id="energyCriterion">0.012 <small>g RMS</small></strong></div><div><span>PERSISTENCIA</span><strong id="persistenceCriterion">2.0 <small>s</small></strong></div></div>
+            <div class="event-section"><div class="event-heading"><span>REGISTRO DE EVENTOS</span><span id="eventCountLabel">0 ENSAYOS</span></div><div id="eventList" class="event-list"></div></div>
+          </article>
+
+          <article class="card chart-card energy-card">
+            <div class="card-heading"><div><span class="eyebrow">04 · PROCESAMIENTO</span><h2>Energía por banda</h2></div><span class="unit-label">RMS · g</span></div>
+            <div class="chart-legend"><span><i class="legend-line slow-line"></i>Banda lenta</span><span><i class="legend-line fast-line"></i>Banda rápida</span><span><i class="legend-line threshold-line"></i>Umbral lento</span></div>
+            <div class="chart-wrap energy-chart-wrap"><canvas id="energyChart" aria-label="Gráfica comparativa de energía de las bandas lenta y rápida" role="img"></canvas></div>
+            <div class="chart-footer"><span>Promedios móviles causales · ventana RMS de 1 s</span><span>filtro ilustrativo</span></div>
+          </article>
+
+          <article class="card chart-card timeline-card">
+            <div class="card-heading"><div><span class="eyebrow">05 · LÓGICA DE ALARMA</span><h2>Persistencia de evento</h2></div><span class="unit-label">ESTADO BINARIO</span></div>
+            <div class="chart-legend"><span><i class="legend-line candidate-line"></i>Candidato</span><span><i class="legend-line accepted-line"></i>Aceptado</span></div>
+            <div class="chart-wrap timeline-chart-wrap"><canvas id="alarmChart" aria-label="Gráfica del estado de detección y eventos aceptados" role="img"></canvas></div>
+            <div class="chart-footer"><span>Gris: supera nivel instantáneo · Rojo: supera persistencia</span><span id="durationLabel">60 s de señal</span></div>
+          </article>
+        </div>
+
+        <div class="transport-bar">
+          <div class="transport-left"><span class="transport-label">REPRODUCCIÓN</span><button id="playBtn" class="transport-button" type="button" aria-label="Reproducir simulación"><span class="play-triangle"></span><span id="playLabel">Reproducir</span></button><button id="restartBtn" class="icon-button" type="button" aria-label="Volver al inicio" title="Volver al inicio">↺</button><label class="speed-label" for="speed">VELOCIDAD</label><select id="speed" class="speed-select"><option value="4">4×</option><option value="8" selected>8×</option><option value="16">16×</option></select></div>
+          <div class="transport-progress"><span id="timeLabel">00:00.0</span><div id="progressTrack" class="progress-track" role="slider" tabindex="0" aria-label="Posición de reproducción" aria-valuemin="0" aria-valuemax="60" aria-valuenow="0" aria-valuetext="00:00.0"><div id="progressFill" class="progress-fill"></div><div id="progressThumb" class="progress-thumb"></div></div><span id="endTimeLabel">01:00.0</span></div>
+          <button id="exportBtn" class="export-button" type="button" title="Descargar muestra y resultados como CSV"><span aria-hidden="true">↓</span> Exportar CSV</button>
+        </div>
+
+        <footer class="page-footer"><span><i class="footer-dot"></i> MODELO DE DEMOSTRACIÓN · SIN SENSOR FÍSICO</span><span>El detector usa umbrales experimentales; el índice de riesgo es ilustrativo.</span></footer>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
