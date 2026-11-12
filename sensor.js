@@ -53,13 +53,8 @@
   let simulationStartedAt = 0;
   let lastSurveyAt = 0;
   let surveyRound = 0;
-  const surveyNodes = [
-    { id: 'NIC-MGA-014', zone: 'Managua · Centro', status: 'active', packets: 0, latency: 34 },
-    { id: 'NIC-MGA-022', zone: 'Managua · Norte', status: 'active', packets: 0, latency: 41 },
-    { id: 'NIC-MAS-008', zone: 'Masaya · Oeste', status: 'active', packets: 0, latency: 29 },
-    { id: 'NIC-LEO-003', zone: 'León · Sur', status: 'intermittent', packets: 0, latency: 0 },
-    { id: 'NIC-RIV-011', zone: 'Rivas · Centro', status: 'inactive', packets: 0, latency: 0 }
-  ];
+  const surveyNodes = []; // Cargados desde /api/dashboard, nunca inventados.
+
 
   function config() {
     const yellowValue = Number.parseFloat(ui.thYellow.value);
@@ -98,35 +93,63 @@
 
   function renderSurveyNodes() {
     if (!ui.surveyNodes) return;
-    const labels = { active: 'Activo', intermittent: 'Intermitente', inactive: 'Inactivo' };
-    ui.surveyNodes.innerHTML = surveyNodes.map((node) => `
-      <div class="survey-node survey-node-${node.status}">
-        <span class="survey-node-dot" aria-hidden="true"></span>
-        <span class="survey-node-copy"><strong>${node.id}</strong><small>${node.zone}</small></span>
-        <span class="survey-node-status">${labels[node.status]}<small>${node.packets ? `${node.latency} ms · ${node.packets} paquetes` : 'sin respuesta'}</small></span>
-      </div>`).join('');
+    const labels = { active: 'Activo', intermittent: 'Mantenimiento', inactive: 'Inactivo' };
+    ui.surveyNodes.replaceChildren();
+    for (const node of surveyNodes) {
+      const card = document.createElement('div');
+      card.className = `survey-node survey-node-${node.status}`;
+      const dot = document.createElement('span');
+      dot.className = 'survey-node-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      const copy = document.createElement('span');
+      copy.className = 'survey-node-copy';
+      const title = document.createElement('strong');
+      title.textContent = node.id;
+      const location = document.createElement('small');
+      location.textContent = node.zone;
+      copy.append(title, location);
+      const status = document.createElement('span');
+      status.className = 'survey-node-status';
+      status.append(document.createTextNode(labels[node.status] || 'Desconocido'));
+      const detail = document.createElement('small');
+      detail.textContent = node.value == null ? 'sin lecturas' : `${Number(node.value).toFixed(1)} ${node.unit || ''} · ${node.origin || '—'}`;
+      status.append(detail);
+      card.append(dot, copy, status);
+      ui.surveyNodes.append(card);
+    }
   }
 
-  function pollSurveyNetwork(now) {
-    if (!ui.surveyFeed || now - lastSurveyAt < 1000) return;
+  async function pollSurveyNetwork(now) {
+    if (!ui.surveyFeed || now - lastSurveyAt < 5000) return;
     lastSurveyAt = now;
-    surveyRound++;
-    let responses = 0;
-    for (const node of surveyNodes) {
-      if (node.status === 'active' || (node.status === 'intermittent' && surveyRound % 3 !== 0)) {
-        node.packets++;
-        node.latency = 18 + Math.floor(Math.random() * 58);
-        responses++;
-      }
+    try {
+      const res = await fetch('/api/dashboard', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const records = await res.json();
+      if (!Array.isArray(records)) throw new Error('Formato no válido');
+      surveyNodes.splice(0, surveyNodes.length, ...records.map(row => ({
+        id: row.Codigo, zone: row.NombreZona,
+        status: row.EstadoSensor === 'ACTIVO' ? 'active' : row.EstadoSensor === 'MANTENIMIENTO' ? 'intermittent' : 'inactive',
+        value: row.UltimoValor == null ? null : Number(row.UltimoValor),
+        unit: row.UnidadMedida, origin: row.OrigenUltimaLectura
+      })));
+      ui.surveyClock.textContent = `BASE DE DATOS · ${new Date().toLocaleTimeString()}`;
+      ui.surveyTotal.textContent = String(surveyNodes.length);
+      ui.surveyActive.textContent = String(surveyNodes.filter(n => n.status === 'active').length);
+      ui.surveyIntermittent.textContent = String(surveyNodes.filter(n => n.status === 'intermittent').length);
+      ui.surveyInactive.textContent = String(surveyNodes.filter(n => n.status === 'inactive').length);
+      renderSurveyNodes();
+      pushSurveyFeed(`SQL Server: ${surveyNodes.length} sensores consultados; sus estados provienen de la base de datos.`, 'ok');
+    } catch (error) {
+      ui.surveyClock.textContent = 'API NO DISPONIBLE';
+      surveyNodes.length = 0;
+      ui.surveyTotal.textContent = '0';
+      ui.surveyActive.textContent = '0';
+      ui.surveyIntermittent.textContent = '0';
+      ui.surveyInactive.textContent = '0';
+      renderSurveyNodes();
+      pushSurveyFeed(`No fue posible consultar SQL Server: ${error.message}`, 'warn');
     }
-    ui.surveyClock.textContent = `SONDEO ACTIVO · ${new Date().toLocaleTimeString()}`;
-    ui.surveyTotal.textContent = String(surveyNodes.length);
-    ui.surveyActive.textContent = String(surveyNodes.filter((node) => node.status === 'active').length);
-    ui.surveyIntermittent.textContent = String(surveyNodes.filter((node) => node.status === 'intermittent').length);
-    ui.surveyInactive.textContent = String(surveyNodes.filter((node) => node.status === 'inactive').length);
-    renderSurveyNodes();
-    const missed = surveyNodes.length - responses;
-    pushSurveyFeed(`Ronda ${String(surveyRound).padStart(3, '0')} · ${responses} respuestas · ${missed} sin respuesta`, missed ? 'warn' : 'ok');
   }
 
   function simulateMotion(now) {
@@ -607,14 +630,15 @@
 
   ui.nodeLabel.textContent = config().node;
   renderSurveyNodes();
+  pollSurveyNetwork(performance.now());
   startSensor();
   const timer = window.setInterval(() => {
     const now = performance.now();
     if (level !== 'detenido') {
       simulateMotion(now);
-      pollSurveyNetwork(now);
       history.push([now, angle]);
     }
+    pollSurveyNetwork(now); // la consulta SQL continúa aun si se pausa el simulador local
     evaluate();
     updateReadingsPerSecond(now);
     drawChart();

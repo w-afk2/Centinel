@@ -1,19 +1,11 @@
-
-# Dependencias de Node.js
+# Dependencias y secretos
 node_modules/
-
-# Variables de entorno y credenciales
 .env
 .env.*
 !.env.example
-
-# Archivos temporales
 *.log
 npm-debug.log*
-
-# Configuración local de VS Code
+# Configuración privada del editor
 .vscode/
-
-# Archivos del sistema
 .DS_Store
 Thumbs.db

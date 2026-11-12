@@ -40,16 +40,16 @@
       </div>
 
       <article class="card sensor-survey-card" aria-label="Actividad de sondeo de celulares">
-        <div class="card-heading"><div><span class="eyebrow">00 · RED DE SONDEO</span><h2>Actividad de celulares en el área</h2></div><span id="surveyClock" class="unit-label">INICIANDO RED</span></div>
-        <p class="survey-caption">Nodos de demostración consultados automáticamente. Los datos y dispositivos de esta vista son simulados.</p>
+        <div class="card-heading"><div><span class="eyebrow">00 · RED DE SONDEO</span><h2>Actividad de sensores en la red</h2></div><span id="surveyClock" class="unit-label">INICIANDO RED</span></div>
+        <p class="survey-caption">La lista de nodos y sus últimas lecturas proceden de SQL Server; la señal de movimiento de esta página continúa simulada.</p>
         <div class="survey-metrics" aria-live="polite">
-          <div><span>CELULARES SONDEADOS</span><strong id="surveyTotal">5</strong></div>
-          <div class="survey-metric-active"><span>ACTIVOS</span><strong id="surveyActive">3</strong></div>
-          <div class="survey-metric-warn"><span>INTERMITENTES</span><strong id="surveyIntermittent">1</strong></div>
-          <div class="survey-metric-off"><span>INACTIVOS</span><strong id="surveyInactive">1</strong></div>
+          <div><span>SENSORES REGISTRADOS</span><strong id="surveyTotal">0</strong></div>
+          <div class="survey-metric-active"><span>ACTIVOS</span><strong id="surveyActive">0</strong></div>
+          <div class="survey-metric-warn"><span>EN MANTENIMIENTO</span><strong id="surveyIntermittent">0</strong></div>
+          <div class="survey-metric-off"><span>INACTIVOS</span><strong id="surveyInactive">0</strong></div>
         </div>
         <div id="surveyNodes" class="survey-node-grid" aria-label="Estado de cada celular sondeado"></div>
-        <div class="survey-feed-wrap"><span class="survey-feed-label">PAQUETES DE SONDEO RECIENTES</span><ol id="surveyFeed" class="survey-feed" aria-live="polite"></ol></div>
+        <div class="survey-feed-wrap"><span class="survey-feed-label">CONSULTAS RECIENTES A SQL SERVER</span><ol id="surveyFeed" class="survey-feed" aria-live="polite"></ol></div>
       </article>
 
       <div class="sensor-grid">
@@ -115,7 +115,7 @@
         </aside>
       </div>
 
-      <footer class="page-footer"><span><i class="footer-dot"></i> RED SIMULADA · PROTOTIPO DE DEMOSTRACIÓN</span><span>Esta simulación no sustituye instrumentos certificados ni un sistema oficial de alerta.</span></footer>
+      <footer class="page-footer"><span><i class="footer-dot"></i> RED EN SQL SERVER · SEÑAL DE MOVIMIENTO SIMULADA</span><span>Esta simulación no sustituye instrumentos certificados ni un sistema oficial de alerta.</span></footer>
     </main>
   </div>
 </body>

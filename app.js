@@ -969,7 +969,38 @@
   ui.scenario.addEventListener('change', () => { syncControls(); runSimulation(); });
   ui.phenomenon.addEventListener('change', () => { updateHazardProfile(); runSimulation(); });
   ui.signalView.addEventListener('change', renderCharts);
-  ui.runBtn.addEventListener('click', () => { runSimulation(); togglePlayback(); });
+  // La simulación sigue siendo sintética, pero el resultado se persiste en SQL Server.
+  async function registrarEnsayo() {
+    const status = el('dbFeedback');
+    status.textContent = 'Registrando resultado sintético en SQL Server…';
+    try {
+      const dashboardResp = await fetch('/api/dashboard', { cache: 'no-store' });
+      if (!dashboardResp.ok) throw new Error(`Dashboard: HTTP ${dashboardResp.status}`);
+      const sensores = await dashboardResp.json();
+      const sensor = sensores.find(item => item.Codigo === 'CEN-004' && item.EstadoSensor === 'ACTIVO')
+        || sensores.find(item => item.TipoSensor === 'Indice de riesgo' && item.EstadoSensor === 'ACTIVO');
+      if (!sensor) throw new Error('No hay sensor de índice de riesgo ACTIVO para esta demostración.');
+      const valor = Math.max(0, Math.min(100, state.risk.values.reduce((max, n) => Math.max(max, n), 0)));
+      const response = await fetch('/api/lecturas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          IdSensor: sensor.IdSensor,
+          Valor: Number(valor.toFixed(3)),
+          Origen: 'SIMULACION',
+          Observacion: `Ensayo ${ui.runId.textContent}: ${getHazardProfile().label} (${state.scenario})`
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      status.textContent = `Lectura ${data.IdLectura} registrada en SQL Server · ${data.IdAlerta ? `alerta ${data.IdAlerta} creada` : 'sin alerta'}.`;
+    } catch (error) {
+      console.error('No se pudo registrar la simulación:', error);
+      status.textContent = `No se guardó el ensayo: ${error.message}`;
+    }
+  }
+
+  ui.runBtn.addEventListener('click', () => { runSimulation(); togglePlayback(); registrarEnsayo(); });
   ui.resetBtn.addEventListener('click', resetControls);
   ui.playBtn.addEventListener('click', togglePlayback);
   ui.restartBtn.addEventListener('click', resetCursor);

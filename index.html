@@ -63,12 +63,12 @@
           <article class="overview-card"><span class="overview-label">MODELO DE RED</span><strong>Descentralizada</strong><small>Teléfonos reutilizados como nodos</small><span class="overview-icon">⌘</span></article>
           <article class="overview-card"><span class="overview-label">CAPACIDADES</span><strong>Sismo + inclinación</strong><small>Acelerómetro · giroscopio · filtros</small><span class="overview-icon overview-blue">⌁</span></article>
           <article class="overview-card"><span class="overview-label">MAPA METEOROLÓGICO</span><strong id="overviewWeather">Consultando…</strong><small id="overviewWeatherSub">Pronóstico modelado por ubicación</small><span class="overview-icon overview-amber">◉</span></article>
-          <article class="overview-card"><span class="overview-label">ESTADO CENTINELA</span><strong>Prototipo de demostración</strong><small>Sin estaciones conectadas a servidor</small><span class="overview-icon overview-violet">◌</span></article>
+          <article class="overview-card"><span class="overview-label">ESTADO CENTINELA</span><strong>Sistema conectado a SQL Server</strong><small>Datos de sensores vía API REST</small><span class="overview-icon overview-violet">◌</span></article>
         </section>
 
         <section class="dash-section map-section" id="mapa">
           <div class="dash-section-heading">
-            <div><span class="dash-eyebrow">01 · CONTEXTO TERRITORIAL</span><h2>Fenómenos sobre <em>Nicaragua</em></h2><p>Explora el pronóstico y el sondeo de celulares de ejemplo por ubicación y estado.</p></div>
+            <div><span class="dash-eyebrow">01 · CONTEXTO TERRITORIAL</span><h2>Fenómenos sobre <em>Nicaragua</em></h2><p>Explora el pronóstico y los sensores registrados en la base de datos por ubicación y estado.</p></div>
             <div class="map-update-block"><span id="mapStatus" class="map-status"><i></i><span>Iniciando mapa…</span></span><button id="refreshWeather" class="dash-icon-button" type="button" title="Actualizar pronóstico" aria-label="Actualizar pronóstico">↻</button></div>
           </div>
           <div class="map-console card">
@@ -84,13 +84,13 @@
             <div class="map-body">
               <div id="nicaraguaMap" class="nicaragua-map" role="application" aria-label="Mapa interactivo de Nicaragua">
                 <div id="mapFallback" class="map-fallback"><span class="fallback-mark">⌖</span><strong>Preparando mapa interactivo</strong><small>Se requiere conexión para cargar la cartografía y el pronóstico.</small></div>
-                <aside class="device-map-summary" aria-label="Conteo de celulares del sondeo de área, datos de demostración">
-                  <div class="device-map-heading"><span>SONDEO DE ÁREA</span><b>DEMO</b></div>
-                  <div class="device-map-total"><strong id="surveyTotal">5</strong><span>celulares de ejemplo</span></div>
+                <aside class="device-map-summary" aria-label="Conteo de sensores registrados en SQL Server">
+                  <div class="device-map-heading"><span>SENSORES REGISTRADOS</span><b>SQL</b></div>
+                  <div class="device-map-total"><strong id="surveyTotal">0</strong><span>sensores registrados</span></div>
                   <div class="device-map-counts">
-                    <span class="device-count-active"><i></i><b id="surveyActive">3</b> activos</span>
-                    <span class="device-count-intermittent"><i></i><b id="surveyIntermittent">1</b> intermitente</span>
-                    <span class="device-count-inactive"><i></i><b id="surveyInactive">1</b> inactivo</span>
+                    <span class="device-count-active"><i></i><b id="surveyActive">0</b> activos</span>
+                    <span class="device-count-intermittent"><i></i><b id="surveyIntermittent">0</b> mantenimiento</span>
+                    <span class="device-count-inactive"><i></i><b id="surveyInactive">0</b> inactivo</span>
                   </div>
                 </aside>
               </div>
@@ -100,12 +100,12 @@
                 <div class="readout-grid"><div><span>TEMPERATURA</span><strong id="readTemp">—</strong></div><div><span>VIENTO</span><strong id="readWind">—</strong></div><div><span>PRECIPITACIÓN</span><strong id="readRain">—</strong></div><div><span>DIRECCIÓN</span><strong id="readDirection">—</strong></div></div>
                 <div class="map-gradient"><div class="gradient-label"><span id="legendMin">24°</span><span>ESCALA DE TEMPERATURA</span><span id="legendMax">34°</span></div><div class="gradient-bar"></div></div>
                 <div class="map-data-note"><span class="note-mark">i</span><p id="mapDataNote">Datos de pronóstico meteorológico. No representan estaciones Centinela.</p></div>
-                <div class="map-source"><span>FUENTE METEO</span><strong><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo · modelo de pronóstico ↗</a></strong><small id="mapTimestamp">Esperando datos…</small></div>
+                <div class="map-source"><span>FUENTE METEO</span><strong><a id="mapDataSource" href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo · modelo de pronóstico ↗</a></strong><small id="mapTimestamp">Esperando datos…</small></div>
               </aside>
             </div>
             <div class="map-footer"><span><i class="map-footer-pin"></i> Managua</span><span><i class="map-footer-pin blue-pin"></i> Costa Caribe</span><span><i class="map-footer-pin amber-pin"></i> Estaciones meteorológicas de referencia</span><span class="map-attribution">Mapa base © OpenStreetMap contributors · Leaflet</span></div>
           </div>
-          <p class="map-disclaimer">El mapa muestra puntos meteorológicos y halos de color aproximados alrededor de cada ubicación; no son una imagen satelital ni una interpolación oficial. El pronóstico procede de un modelo consultado en Open-Meteo y puede diferir de las condiciones observadas. Los nodos y eventos Centinela son ilustrativos. Esta interfaz no es un servicio oficial ni debe usarse para decisiones de emergencia.</p>
+          <p class="map-disclaimer">El mapa muestra puntos meteorológicos y halos de color aproximados alrededor de cada ubicación; no son una imagen satelital ni una interpolación oficial. El pronóstico procede de un modelo consultado en Open-Meteo y puede diferir de las condiciones observadas. Los nodos proceden de SQL Server; las lecturas de prueba y simulación son sintéticas. Esta interfaz no es un servicio oficial ni debe usarse para decisiones de emergencia.</p>
         </section>
 
         <section class="dash-section" id="problema">
@@ -117,7 +117,7 @@
         <section class="dash-section dash-section-alt" id="solucion">
           <div class="dash-section-heading"><div><span class="dash-eyebrow">03 · SOLUCIÓN</span><h2>Centinela: nodos de observación accesibles</h2><p>Un teléfono se fija en una base estable, procesa movimiento localmente y comparte el estado cuando existe conectividad.</p></div><span class="section-index">03</span></div>
           <div class="workflow-grid"><article class="workflow-step"><span>01</span><div class="workflow-icon">⌁</div><h3>Detectar</h3><p>Acelerómetro y giroscopio leen movimiento e inclinación.</p></article><div class="workflow-connector">→</div><article class="workflow-step"><span>02</span><div class="workflow-icon">∿</div><h3>Filtrar</h3><p>Procesamiento local busca señales sostenidas y reduce impulsos breves.</p></article><div class="workflow-connector">→</div><article class="workflow-step"><span>03</span><div class="workflow-icon">▤</div><h3>Registrar</h3><p>El nodo conserva la bitácora local y puede sincronizar al recuperar red.</p></article><div class="workflow-connector">→</div><article class="workflow-step"><span>04</span><div class="workflow-icon">⌖</div><h3>Compartir</h3><p>La red comunitaria resume observaciones para revisión humana.</p></article></div>
-          <div class="dash-action-strip"><div><span class="dash-eyebrow">HERRAMIENTAS INTERACTIVAS</span><strong>Explora el procesamiento y la lectura del teléfono</strong><small>La simulación y el sensor son páginas independientes integradas al dashboard.</small></div><div class="dash-action-links"><a href="simulador.html" class="dash-button">Abrir simulador <span>↗</span></a><a href="sensor.html" class="dash-button dash-button-primary">Abrir sensor real <span>↗</span></a></div></div>
+          <div class="dash-action-strip"><div><span class="dash-eyebrow">HERRAMIENTAS INTERACTIVAS</span><strong>Explora el procesamiento y la lectura del teléfono</strong><small>La simulación y el sensor son páginas independientes integradas al dashboard.</small></div><div class="dash-action-links"><a href="simulador.html" class="dash-button">Abrir simulador <span>↗</span></a><a href="sensor.html" class="dash-button dash-button-primary">Abrir vista sensor <span>↗</span></a></div></div>
         </section>
 
         <section class="dash-section" id="funcionamiento">
@@ -132,9 +132,15 @@
         </section>
 
         <section class="dash-section" id="red">
-          <div class="dash-section-heading"><div><span class="dash-eyebrow">06 · LA RED</span><h2>Celulares del sondeo de área · maqueta</h2><p>La maqueta representa <span id="networkSurveySummary">5 teléfonos de ejemplo: 3 activos, 1 intermitente y 1 inactivo.</span></p></div><span class="demo-chip"><i></i> DATOS DE EJEMPLO</span></div>
-          <div class="node-table-wrap card"><div class="node-table-head"><span>NODO</span><span>UBICACIÓN</span><span>ESTADO DE MAQUETA</span><span>SEÑAL</span></div><div class="node-row"><strong>CN-014</strong><span>Managua · centro</span><span class="node-state node-online"><i></i> Activo (demo)</span><span>91%</span></div><div class="node-row"><strong>CN-021</strong><span>León · urbano</span><span class="node-state node-online"><i></i> Activo (demo)</span><span>84%</span></div><div class="node-row"><strong>CN-008</strong><span>Matagalpa · ladera</span><span class="node-state node-warn"><i></i> Intermitente (demo)</span><span>48%</span></div><div class="node-row"><strong>CN-032</strong><span>Bluefields · costa Caribe</span><span class="node-state node-online"><i></i> Activo (demo)</span><span>76%</span></div><div class="node-row"><strong>CN-019</strong><span>Estelí · norte</span><span class="node-state node-off"><i></i> Inactivo (demo)</span><span>0%</span></div></div>
-          <div class="dash-callout"><span>i</span><p>El mapa y esta tabla comparten 5 dispositivos ilustrativos. No son teléfonos efectivamente sondeados ni estaciones conectadas; reemplaza estos datos cuando tengas el inventario real.</p></div>
+          <div class="dash-section-heading"><div><span class="dash-eyebrow">06 · LA RED</span><h2>Sensores de la red · SQL Server</h2><p>Consulta de <span id="networkSurveySummary">los sensores registrados en SQL Server.</span></p></div><span class="demo-chip"><i></i> DATOS DE LA BD</span></div>
+          <div class="node-table-wrap card" id="networkNodes">
+            <div class="node-table-head"><span>NODO</span><span>UBICACIÓN</span><span>ESTADO EN SQL</span><span>LECTURA</span></div>
+            <div class="node-row"><strong>Consultando…</strong><span>Esperando respuesta de la API</span><span>—</span><span>—</span></div>
+          </div>
+          <div class="node-table-wrap card" id="sqlAlerts" style="margin-top:1rem">
+            <div class="node-table-head"><span>ALERTA</span><span>SENSOR · ZONA</span><span>VALOR</span><span>ESTADO</span></div>
+            <div class="node-row"><strong>Cargando alertas…</strong><span>Consulta a SQL Server</span><span>—</span><span>—</span></div>
+          </div>
         </section>
 
         <section class="dash-section dash-section-alt" id="innovacion">

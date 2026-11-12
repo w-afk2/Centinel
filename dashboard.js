@@ -14,13 +14,9 @@
     { name: 'Juigalpa', short: 'JUI', lat: 12.107, lon: -85.364 }
   ];
 
-  const sampleNodes = [
-    { id: 'CN-014', place: 'Managua · centro', lat: 12.128, lon: -86.247, status: 'Activo (demo)', kind: 'online', signal: '91%' },
-    { id: 'CN-021', place: 'León · urbano', lat: 12.446, lon: -86.881, status: 'Activo (demo)', kind: 'online', signal: '84%' },
-    { id: 'CN-008', place: 'Matagalpa · ladera', lat: 12.932, lon: -85.925, status: 'Intermitente (demo)', kind: 'warn', signal: '48%' },
-    { id: 'CN-032', place: 'Bluefields · costa Caribe', lat: 12.019, lon: -83.763, status: 'Activo (demo)', kind: 'online', signal: '76%' },
-    { id: 'CN-019', place: 'Estelí · norte', lat: 13.098, lon: -86.352, status: 'Inactivo · sin conexión (demo)', kind: 'off', signal: '0%' }
-  ];
+  // Se reciben de dbo.vw_DashboardCentinel a través de la API.
+  let sampleNodes = [];
+  let apiOnline = false;
 
   const $ = (selector) => document.querySelector(selector);
   const mapElement = $('#nicaraguaMap');
@@ -65,7 +61,157 @@
     $('#surveyActive').textContent = String(counts.active);
     $('#surveyIntermittent').textContent = String(counts.intermittent);
     $('#surveyInactive').textContent = String(counts.inactive);
-    $('#networkSurveySummary').textContent = `${sampleNodes.length} teléfonos de ejemplo: ${counts.active} activos, ${counts.intermittent} intermitente${counts.intermittent === 1 ? '' : 's'} y ${counts.inactive} inactivo${counts.inactive === 1 ? '' : 's'}.`;
+    $('#networkSurveySummary').textContent = apiOnline
+      ? `${sampleNodes.length} sensores registrados en SQL Server: ${counts.active} activos, ${counts.intermittent} en mantenimiento y ${counts.inactive} inactivos.`
+      : 'No se ha podido consultar la red Centinel en SQL Server.';
+  }
+
+  function paintNodeTable() {
+    const table = $('#networkNodes');
+    if (!table) return;
+    table.querySelectorAll('.node-row').forEach(row => row.remove());
+    if (!sampleNodes.length) {
+      const row = document.createElement('div'); row.className = 'node-row';
+      for (const part of ['Sin registros', apiOnline ? 'Agrega un sensor desde la API' : 'No se pudo conectar con la API', '—', '—']) {
+        const el = document.createElement('span'); el.textContent = part; row.append(el);
+      }
+      table.append(row);
+      return;
+    }
+    for (const node of sampleNodes) {
+      const row = document.createElement('div'); row.className = 'node-row';
+      const code = document.createElement('strong'); code.textContent = node.id;
+      const zone = document.createElement('span'); zone.textContent = node.place;
+      const state = document.createElement('span');
+      state.className = `node-state node-${node.kind}`;
+      state.textContent = node.status;
+      const signal = document.createElement('span'); signal.textContent = node.signal;
+      row.append(code, zone, state, signal);
+      table.append(row);
+    }
+  }
+
+  const htmlEscape = (value) => String(value ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function setReadoutLabels(sensorMode) {
+    const source = $('#mapDataSource');
+    const sourceTitle = document.querySelector('.map-source > span');
+    if (source) {
+      source.textContent = sensorMode ? 'CentinelDB · SQL Server' : 'Open-Meteo · modelo de pronóstico ↗';
+      if (sensorMode) source.removeAttribute('href');
+      else source.href = 'https://open-meteo.com/';
+    }
+    if (sourceTitle) sourceTitle.textContent = sensorMode ? 'FUENTE SQL' : 'FUENTE METEO';
+    const labels = document.querySelectorAll('.readout-grid > div > span');
+    const values = sensorMode
+      ? ['ÚLTIMA LECTURA', 'TIPO', 'UMBRAL', 'ESTADO']
+      : ['TEMPERATURA', 'VIENTO', 'PRECIPITACIÓN', 'DIRECCIÓN'];
+    labels.forEach((label, index) => { if (values[index]) label.textContent = values[index]; });
+  }
+
+  async function loadAlerts() {
+    const table = $('#sqlAlerts');
+    if (!table) return;
+    let rows;
+    try {
+      const response = await fetch('/api/alertas/detalle?limit=10', { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      rows = await response.json();
+      if (!Array.isArray(rows)) throw new Error('Formato inesperado');
+    } catch (error) {
+      rows = [];
+      console.warn('No se pudo consultar Alertas:', error);
+    }
+    table.querySelectorAll('.node-row').forEach(row => row.remove());
+    if (!rows.length) {
+      const row = document.createElement('div'); row.className = 'node-row';
+      for (const value of ['Sin alertas registradas', 'Registra una lectura superior al umbral', '—', '—']) {
+        const span = document.createElement('span'); span.textContent = value; row.append(span);
+      }
+      table.append(row);
+      return;
+    }
+    for (const alert of rows) {
+      const row = document.createElement('div'); row.className = 'node-row';
+      const name = document.createElement('strong'); name.textContent = `#${alert.IdAlerta}`;
+      const node = document.createElement('span'); node.textContent = `${alert.Codigo} · ${alert.Zona}`;
+      const value = document.createElement('span'); value.textContent = Number(alert.Valor).toFixed(1);
+      const state = document.createElement('span');
+      state.className = 'alert-state-cell';
+      const label = document.createElement('span');
+      label.textContent = alert.Estado;
+      state.append(label);
+      if (alert.Estado === 'PENDIENTE') {
+        const action = document.createElement('button');
+        action.type = 'button';
+        action.className = 'alert-attend-button';
+        action.textContent = 'Atender';
+        action.setAttribute('aria-label', `Marcar alerta ${alert.IdAlerta} como atendida`);
+        action.addEventListener('click', async () => {
+          if (!window.confirm(`¿Marcar la alerta #${alert.IdAlerta} como ATENDIDA?`)) return;
+          action.disabled = true;
+          action.textContent = 'Guardando…';
+          try {
+            const response = await fetch(`/api/alertas/${alert.IdAlerta}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ Estado: 'ATENDIDA' })
+            });
+            if (!response.ok) {
+              const error = await response.json().catch(() => ({}));
+              throw new Error(error.error || `HTTP ${response.status}`);
+            }
+            await loadAlerts();
+          } catch (error) {
+            action.disabled = false;
+            action.textContent = 'Atender';
+            window.alert(`No fue posible actualizar la alerta: ${error.message}`);
+          }
+        });
+        state.append(action);
+      }
+      row.append(name, node, value, state);
+      table.append(row);
+    }
+  }
+
+  async function loadDashboard() {
+    try {
+      const response = await fetch('/api/dashboard', { cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`API: HTTP ${response.status}`);
+      const records = await response.json();
+      if (!Array.isArray(records)) throw new Error('La API devolvió una respuesta inesperada.');
+      sampleNodes = records.map((row) => ({
+        id: row.Codigo,
+        place: row.NombreZona,
+        lat: row.Latitud == null ? null : Number(row.Latitud),
+        lon: row.Longitud == null ? null : Number(row.Longitud),
+        kind: row.EstadoSensor === 'ACTIVO' ? 'online' : row.EstadoSensor === 'MANTENIMIENTO' ? 'warn' : 'off',
+        status: row.EstadoSensor,
+        signal: row.EstadoLectura || 'SIN LECTURAS',
+        value: row.UltimoValor == null ? null : Number(row.UltimoValor),
+        unit: row.UnidadMedida,
+        type: row.TipoSensor,
+        threshold: Number(row.UmbralAlerta),
+        origin: row.OrigenUltimaLectura,
+        time: row.FechaUltimaLectura,
+        alert: row.EstadoLectura === 'ALERTA'
+      }));
+      apiOnline = true;
+      updateDeviceSummary();
+      paintNodeTable();
+      paintDemoNodes();
+      if (currentLayer === 'centinela') setLayer('centinela');
+    } catch (error) {
+      console.error('No se pudo leer el dashboard de la API:', error);
+      apiOnline = false;
+      sampleNodes = [];
+      updateDeviceSummary();
+      paintNodeTable();
+      paintDemoNodes();
+      if (currentLayer === 'centinela') setLayer('centinela');
+    }
   }
 
   function number(value, digits = 1) {
@@ -155,18 +301,29 @@
     return bestIndex;
   }
 
-  function setReadout({ place, data, label, status, detail, isDemo = false }) {
+  function setReadout({ place, data, label, status, detail, isNode = false }) {
+    setReadoutLabels(isNode);
     $('#selectedPlaceLabel').textContent = label || place?.name?.toLocaleUpperCase('es-NI') || 'NICARAGUA';
-    $('#selectedPlaceValue').textContent = isDemo ? status : `${number(data?.temperature, 1)}°`;
-    $('#selectedPlaceCondition').textContent = isDemo ? detail : `${weatherDescription(data?.code)} · ${place?.name || ''}`;
-    $('#readTemp').textContent = isDemo ? 'Maqueta' : `${number(data?.temperature, 1)} °C`;
-    $('#readWind').textContent = isDemo ? 'Sin telemetría' : `${number(data?.windSpeed, 1)} km/h`;
-    $('#readRain').textContent = isDemo ? 'Sin telemetría' : `${number(data?.precipitation, 1)} mm`;
-    $('#readDirection').textContent = isDemo ? '—' : directionName(data?.windDirection);
-    $('#mapTimestamp').textContent = isDemo ? 'Puntos de ejemplo · sin conexión' : `Hora local del modelo: ${formatForecastTime(data?.time)}`;
-    $('#mapDataNote').textContent = isDemo
-      ? 'Nodos de muestra para ilustrar la interfaz. No hay equipos Centinela conectados a este mapa.'
-      : 'Pronóstico de modelo por ubicación. No equivale a observación en superficie ni a alerta oficial.';
+    $('#selectedPlaceValue').textContent = isNode ? status : `${number(data?.temperature, 1)}°`;
+    $('#selectedPlaceCondition').textContent = isNode ? detail : `${weatherDescription(data?.code)} · ${place?.name || ''}`;
+    if (isNode) {
+      const node = data;
+      $('#readTemp').textContent = node?.value == null ? 'Sin lecturas' : `${number(node.value, 1)} ${node.unit || ''}`;
+      $('#readWind').textContent = node?.type || '—';
+      $('#readRain').textContent = node ? `${number(node.threshold, 1)} ${node.unit || ''}` : '—';
+      $('#readDirection').textContent = node?.signal || '—';
+      $('#mapTimestamp').textContent = node?.time
+        ? `Última lectura: ${new Date(node.time).toLocaleString('es-NI', { timeZone: 'America/Managua' })} · ${node.origin || '—'}`
+        : 'Sin lecturas registradas';
+      $('#mapDataNote').textContent = 'Datos guardados en SQL Server. Las lecturas marcadas PRUEBA o SIMULACION son sintéticas, no avisos oficiales.';
+    } else {
+      $('#readTemp').textContent = `${number(data?.temperature, 1)} °C`;
+      $('#readWind').textContent = `${number(data?.windSpeed, 1)} km/h`;
+      $('#readRain').textContent = `${number(data?.precipitation, 1)} mm`;
+      $('#readDirection').textContent = directionName(data?.windDirection);
+      $('#mapTimestamp').textContent = `Hora local del modelo: ${formatForecastTime(data?.time)}`;
+      $('#mapDataNote').textContent = 'Pronóstico de modelo por ubicación. No equivale a observación en superficie ni a alerta oficial.';
+    }
   }
 
   function currentRecord(record) {
@@ -228,7 +385,7 @@
       title.textContent = 'PRECIPITACIÓN · MM/H'; min.textContent = '0'; max.textContent = '15+';
       bar.style.background = 'linear-gradient(90deg,#586d6e,#70cce1,#559fe0,#806bdb,#bd72cb)';
     } else if (currentLayer === 'centinela') {
-      title.textContent = 'ESTADO DE NODOS · DEMO'; min.textContent = 'Activo'; max.textContent = 'Sin conexión';
+      title.textContent = 'ESTADO DE NODOS · SQL SERVER'; min.textContent = 'Activo'; max.textContent = 'Sin conexión';
       bar.style.background = 'linear-gradient(90deg,#53c99e,#e9b45f,#df736d)';
     } else {
       title.textContent = 'ESCALA DE TEMPERATURA'; min.textContent = '24°'; max.textContent = '36°';
@@ -275,19 +432,16 @@
 
   function paintDemoNodes() {
     if (!map || !demoLayer || !nodeLayer) return;
-    demoLayer.clearLayers();
+    demoLayer.clearLayers(); // No se muestran eventos ficticios como registros reales.
     nodeLayer.clearLayers();
     sampleNodes.forEach((node) => {
+      if (!Number.isFinite(node.lat) || !Number.isFinite(node.lon)) return;
       const icon = L.divIcon({ className: '', html: `<div class="centinela-marker node-${node.kind}">⌖</div>`, iconSize: [21, 21], iconAnchor: [10, 10] });
       const marker = L.marker([node.lat, node.lon], { icon, title: `${node.id} · ${node.status}` });
-      marker.bindPopup(`<strong>Teléfono ${node.id} · ${node.status}</strong><span>${node.place} · señal ilustrativa ${node.signal} · sondeo de ejemplo</span>`);
-      marker.on('click', () => setReadout({ label: `${node.id} · ${node.place.toLocaleUpperCase('es-NI')}`, status: node.status, detail: `Señal ilustrativa: ${node.signal}`, isDemo: true }));
+      marker.bindPopup(`<strong>Sensor ${htmlEscape(node.id)} · ${htmlEscape(node.status)}</strong><span>${htmlEscape(node.place)} · señal ${htmlEscape(node.signal)} · lectura ${node.value == null ? 'sin datos' : `${number(node.value, 1)} ${htmlEscape(node.unit)}`} ${node.alert ? '· UMBRAL SUPERADO' : ''}</span>`);
+      marker.on('click', () => setReadout({ label: `${node.id} · ${node.place.toLocaleUpperCase('es-NI')}`, status: node.status, detail: node.alert ? 'Última lectura: umbral superado' : 'Información de la base de datos', data: node, isNode: true }));
       marker.addTo(nodeLayer);
     });
-    const eventIcon = L.divIcon({ className: '', html: '<div class="quake-marker">⌁</div>', iconSize: [26, 26], iconAnchor: [13, 13] });
-    L.marker([12.55, -86.1], { icon: eventIcon, title: 'Evento demostrativo' })
-      .bindPopup('<strong>Evento de prueba · maqueta</strong><span>Marcador ilustrativo, no corresponde a un sismo reportado.</span>')
-      .addTo(demoLayer);
   }
 
   function setLayer(layer) {
@@ -304,10 +458,16 @@
       demoLayer.addTo(map);
       nodeLayer.addTo(map);
       const counts = getDeviceCounts();
-      $('#overviewWeather').textContent = `${sampleNodes.length} celulares de muestra`;
-      $('#overviewWeatherSub').textContent = `${counts.active} activos · ${counts.intermittent} intermitente${counts.intermittent === 1 ? '' : 's'} · ${counts.inactive} inactivo${counts.inactive === 1 ? '' : 's'}`;
+      $('#overviewWeather').textContent = apiOnline ? `${sampleNodes.length} sensores registrados` : 'Sin conexión SQL';
+      $('#overviewWeatherSub').textContent = `${counts.active} activos · ${counts.intermittent} mantenimiento · ${counts.inactive} inactivos`;
       const first = sampleNodes[0];
-      setReadout({ label: `${first.id} · ${first.place.toLocaleUpperCase('es-NI')}`, status: first.status, detail: `Señal ilustrativa: ${first.signal}`, isDemo: true });
+      if (first) {
+        setReadout({ label: `${first.id} · ${first.place.toLocaleUpperCase('es-NI')}`, status: first.status,
+          detail: first.alert ? 'Última lectura supera el umbral' : 'Registro de SQL Server', data: first, isNode: true });
+      } else {
+        setReadout({ label: 'RED CENTINEL', status: apiOnline ? 'Sin sensores' : 'API no disponible',
+          detail: apiOnline ? 'Registra sensores para mostrarlos aquí' : 'Verifica SQL Server y el backend', isNode: true });
+      }
     } else {
       if (map.hasLayer(demoLayer)) map.removeLayer(demoLayer);
       weatherLayer.addTo(map);
@@ -398,7 +558,7 @@
     sliderLabel.textContent = formatForecastTime(forecastTimes[forecastIndex]);
     if (currentLayer !== 'centinela') paintWeather();
   });
-  refreshButton?.addEventListener('click', loadWeather);
+  refreshButton?.addEventListener('click', () => { loadWeather(); loadDashboard(); loadAlerts(); });
 
   const navLinks = [...document.querySelectorAll('.dash-nav-link')];
   navLinks.forEach((link) => link.addEventListener('click', (event) => {
@@ -426,5 +586,9 @@
 
   setMapLegend();
   updateDeviceSummary();
+  paintNodeTable();
   if (initMap()) loadWeather();
+  loadDashboard();
+  loadAlerts();
+  window.setInterval(() => { loadDashboard(); loadAlerts(); }, 15000);
 })();
